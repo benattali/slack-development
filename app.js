@@ -1,29 +1,31 @@
+const { App, ExpressReceiver  } = require('@slack/bolt');
 const config = require('./utils/config');
-const { App, ExpressReceiver } = require('@slack/bolt');
 
-const receiver = new ExpressReceiver({
-  signingSecret: process.env.SLACK_SIGNING_SECRET
-});
+const receiver = new ExpressReceiver({ signingSecret: config.SLACK_SIGNING_SECRET });
 
 const app = new App({
-  token: process.env.SLACK_BOT_TOKEN,
-  receiver,
-  port: config.PORT,
+  token: config.SLACK_BOT_TOKEN,
+  receiver
 });
 
-app.event('message', async ({ event, client }) => {
-  // Do some slack-specific stuff here
-  await client.chat.postMessage({
-    channel: "C03RF614EN4",
-    text: "test",
-  });
+app.message('hello', async ({ message, say }) => {
+  // say() sends a message to the channel where the event was triggered
+  await say(`Hey there <@${message.user}>!`);
 });
 
-receiver.router.get('/', (req, res) => {
-  res.json('show me something');
+receiver.router.get('/test', (req, res) => {
+  res.send('yay!');
+});
+
+app.command('/message', async ({ command, ack, say }) => {
+  // Acknowledge command request
+  await ack();
+
+  await say("slack me a message");
 });
 
 (async () => {
-  await app.start();
-  console.log('⚡️ Bolt app started');
+  await app.start(config.PORT);
+
+  console.log('⚡️ Bolt app is running!');
 })();
