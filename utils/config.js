@@ -3,9 +3,13 @@ require('dotenv').config()
 const PORT = process.env.PORT
 const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN
 const SLACK_SIGNING_SECRET = process.env.SLACK_SIGNING_SECRET
+const DEVELOPING_CHANNEL_ID = process.env.DEVELOPING_CHANNEL_ID
+const SENDING_CHANNEL_ID = process.env.SENDING_CHANNEL_ID
 
 module.exports = {
   PORT,
   SLACK_BOT_TOKEN,
-  SLACK_SIGNING_SECRET
+  SLACK_SIGNING_SECRET,
+  DEVELOPING_CHANNEL_ID,
+  SENDING_CHANNEL_ID,
 }
