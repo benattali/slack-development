@@ -8,23 +8,48 @@ const app = new App({
   receiver
 });
 
-const rules = [
-    {
-      channelId: config.DEVELOPING_CHANNEL_ID,
-      keyword: "flotz",
-      channelName: "developing",
-    },
-    {
-      channelId: config.SENDING_CHANNEL_ID,
-      keyword: "tanya",
-      channelName: "sending",
-    },
-  ]
+const rules = {}
+rules[config.DEVELOPING_CHANNEL_ID] = {
+  details: [{
+    keyword: "test", 
+    echoToChannelId: "C03QRDHD2MQ",
+    channelName: "General"
+  }, {
+    keyword: "hello", 
+    echoToChannelId: "C03QRDHD2MQ",
+    channelName: "General"
+  }]
+};
 
+rules[config.SENDING_CHANNEL_ID] = {
+  details: [{
+    keyword: "cat", 
+    echoToChannelId: config.DEVELOPING_CHANNEL_ID,
+    channelName: "Developing"
+  }, {
+    keyword: "dog", 
+    echoToChannelId: "C03QRDHD2MQ",
+    channelName: "General"
+  },
+  {
+    keyword: "test", 
+    echoToChannelId: config.DEVELOPING_CHANNEL_ID,
+    channelName: "Developing"
+  }]
+};
 
-app.message('hello', async ({ message, say }) => {
-  // say() sends a message to the channel where the event was triggered
-  await say(`Hey there <@${message.user}>!`);
+const ruleKeys = Object.keys(rules);
+
+ruleKeys.forEach((ruleKey) => {
+  const channelRules = rules[ruleKey].details;
+
+  channelRules.forEach((channelRule) => {
+    app.message(channelRule.keyword, ({ message, client }) => {
+      if (message.channel === ruleKey) {
+        client.chat.postMessage({channel: channelRule.echoToChannelId, text: `copy of ${message.text}!`});
+      }
+    });
+  });
 });
 
 receiver.router.get('/test', (req, res) => {
@@ -34,8 +59,15 @@ receiver.router.get('/test', (req, res) => {
 app.command('/showrules', async ({ command, ack, say }) => {
   // Acknowledge command request
   await ack();
-
-  await say(`${rules[0].keyword} ---> ${rules[0].channelName}\n${rules[1].keyword} ---> ${rules[1].channelName}`);
+  const displayRules = Object.keys(rules);
+  // TODO: Only print rules for the channel we are in
+  displayRules.forEach(async (ruleKey) => {
+    const channelRules = rules[ruleKey].details;
+    const listeningToChannel = ruleKey;
+    channelRules.forEach(async (channelRule) => {
+      await say(`Listening on: ${listeningToChannel}: ${channelRule.keyword} ---> ${channelRule.channelName}`);
+    })
+  })
 });
 
 app.command('/addrule', async ({ command, ack, say }) => {
@@ -54,6 +86,7 @@ app.command('/addrule', async ({ command, ack, say }) => {
 
 (async () => {
   await app.start(config.PORT);
+  console.log(`Running on port ${config.PORT}`)
 
   console.log('⚡️ Bolt app is running!');
 })();
