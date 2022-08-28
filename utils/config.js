@@ -5,6 +5,7 @@ const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN
 const SLACK_SIGNING_SECRET = process.env.SLACK_SIGNING_SECRET
 const DEVELOPING_CHANNEL_ID = process.env.DEVELOPING_CHANNEL_ID
 const SENDING_CHANNEL_ID = process.env.SENDING_CHANNEL_ID
+const MONGODB_URI = process.env.MONGODB_URI
 
 module.exports = {
   PORT,
@@ -12,4 +13,5 @@ module.exports = {
   SLACK_SIGNING_SECRET,
   DEVELOPING_CHANNEL_ID,
   SENDING_CHANNEL_ID,
+  MONGODB_URI,
 }

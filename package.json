@@ -8,6 +8,7 @@
   "dependencies": {
     "@slack/bolt": "^3.12.1",
     "dotenv": "^16.0.1",
+    "mongoose": "^6.5.3",
     "nodemon": "^2.0.19"
   }
 }
