@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 
 const ruleSchema = new mongoose.Schema({
-  channelIdToSend: {
+  echoToChannelId: {
     type: String,
     required: true,
   },
@@ -9,10 +9,17 @@ const ruleSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  channelNameToSend: {
+  echoToChannelName: {
     type: String,
     required: true,
   },
+  listeningChannelId: {
+    type: String,
+    required: true,
+  }
+  // TODO: consider adding a unique hash to validate
+  // echoToChannelId, keyword & listeningChannelId are 
+  // unique
 })
 
 ruleSchema.set('toJSON', {
