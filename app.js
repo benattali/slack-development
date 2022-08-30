@@ -18,49 +18,17 @@ mongoose.connect(config.MONGODB_URI)
     console.log('error connecting to MongoDB:', error.message)
   })
 
-const rules = {}
-rules[config.DEVELOPING_CHANNEL_ID] = {
-  details: [{
-    keyword: "test",
-    echoToChannelId: "C03QRDHD2MQ",
-    channelName: "General"
-  }, {
-    keyword: "hello",
-    echoToChannelId: "C03QRDHD2MQ",
-    channelName: "General"
-  }]
-}
+async function initializeRules() {
+  const allRules = await Rule.find({})
 
-rules[config.SENDING_CHANNEL_ID] = {
-  details: [{
-    keyword: "cat",
-    echoToChannelId: config.DEVELOPING_CHANNEL_ID,
-    channelName: "Developing"
-  }, {
-    keyword: "dog",
-    echoToChannelId: "C03QRDHD2MQ",
-    channelName: "General"
-  },
-  {
-    keyword: "test",
-    echoToChannelId: config.DEVELOPING_CHANNEL_ID,
-    channelName: "Developing"
-  }]
-}
-
-const ruleKeys = Object.keys(rules)
-
-ruleKeys.forEach((ruleKey) => {
-  const channelRules = rules[ruleKey].details
-
-  channelRules.forEach((channelRule) => {
-    app.message(channelRule.keyword, ({ message, client }) => {
-      if (message.channel === ruleKey) {
-        client.chat.postMessage({channel: channelRule.echoToChannelId, text: `copy of ${message.text}!`});
+  allRules.forEach((rule) => {
+    app.message(rule.keyword, ({ message, client }) => {
+      if (message.channel === rule.listeningChannelId) {
+        client.chat.postMessage({channel: rule.echoToChannelId, text: `copy of ${message.text}!`});
       }
     })
   })
-})
+}
 
 receiver.router.get('/test', (req, res) => {
   res.send('yay!')
@@ -68,10 +36,9 @@ receiver.router.get('/test', (req, res) => {
 
 app.command('/showrules', async ({ command, ack, say }) => {
   // Acknowledge command request
-  // TODO: Add index on listeningChannelId for quick lookup here
   await ack()
+  // TODO: Add index on listeningChannelId for quick lookup here
   channelRules = await Rule.find({ listeningChannelId: command.channel_id });
-  console.log(channelRules)
   channelRules.forEach(async (channelRule) => {
     await say(`${channelRule.keyword} ---> ${channelRule.echoToChannelName}`)
   })
@@ -81,6 +48,7 @@ app.command('/showrules', async ({ command, ack, say }) => {
 app.command('/addrule', async ({ command, ack, say }) => {
   await ack()
 
+  // TODO: set up user prompts for keywords and channel
   const textArr = command.text.split(" ")
   const keyword = textArr[0]
   const channelToSend = textArr[1].match(/([A-Z])\w+/)[0]
@@ -92,6 +60,7 @@ app.command('/addrule', async ({ command, ack, say }) => {
     echoToChannelName: channelNameToSend,
   })
   await rule.save()
+  // TODO: set up listener for new rule
 
   await say(`Added ${rule.keyword} ---> ${rule.echoToChannelName}`)
 });
@@ -99,6 +68,7 @@ app.command('/addrule', async ({ command, ack, say }) => {
 (async () => {
   await app.start(config.PORT);
   console.log(`Running on port ${config.PORT}`)
-
   console.log('⚡️ Bolt app is running!')
+
+  initializeRules()
 })()
