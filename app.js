@@ -2,6 +2,7 @@ const { App, ExpressReceiver  } = require('@slack/bolt')
 const config = require('./utils/config')
 const mongoose = require('mongoose')
 const Rule = require('./models/rule')
+const { setListener } = require('./utils/helpers')
 
 const receiver = new ExpressReceiver({ signingSecret: config.SLACK_SIGNING_SECRET })
 
@@ -22,17 +23,14 @@ async function initializeRules() {
   const allRules = await Rule.find({})
 
   allRules.forEach((rule) => {
-    app.message(rule.keyword, ({ message, client }) => {
-      if (message.channel === rule.listeningChannelId) {
-        client.chat.postMessage({channel: rule.echoToChannelId, text: `copy of ${message.text}!`});
-      }
-    })
+    setListener(app, rule)
   })
 }
 
-receiver.router.get('/test', (req, res) => {
-  res.send('yay!')
-});
+// example of creating a new route if we need to
+// receiver.router.get('/test', (req, res) => {
+//   res.send('yay!')
+// });
 
 app.command('/showrules', async ({ command, ack, say }) => {
   // Acknowledge command request
@@ -60,7 +58,7 @@ app.command('/addrule', async ({ command, ack, say }) => {
     echoToChannelName: channelNameToSend,
   })
   await rule.save()
-  // TODO: set up listener for new rule
+  // setListener(app, rule)
 
   await say(`Added ${rule.keyword} ---> ${rule.echoToChannelName}`)
 });
