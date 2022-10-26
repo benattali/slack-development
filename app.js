@@ -58,7 +58,7 @@ app.command('/addrule', async ({ command, ack, say }) => {
     echoToChannelName: channelNameToSend,
   })
   await rule.save()
-  // setListener(app, rule)
+  setListener(app, rule)
 
   await say(`Added ${rule.keyword} ---> ${rule.echoToChannelName}`)
 });
