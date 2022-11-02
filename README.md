@@ -6,3 +6,4 @@
 5. run `npm start`
 6. in a new terminal window run `ngrok http 3000`
 7. edit the [Event Subscriptions](https://api.slack.com/apps/A03UL32MZQC/event-subscriptions) and [Slash Commands](https://api.slack.com/apps/A03UL32MZQC/slash-commands) request urls to use the new ngrok url from step 6
+8. edit the [Interactivity](https://api.slack.com/apps/A03UL32MZQC/interactive-messages) request url to use teh new ngrok url from step 6

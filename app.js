@@ -29,7 +29,7 @@ async function initializeRules() {
 
 // example of creating a new route if we need to
 receiver.router.post('/create-rule', (req, res) => {
-  console.log("********")
+  res.status(200).end()
 });
 
 app.command('/showrules', async ({ command, ack, say }) => {
@@ -41,6 +41,25 @@ app.command('/showrules', async ({ command, ack, say }) => {
     await say(`${channelRule.keyword} ---> ${channelRule.echoToChannelName}`)
   })
 
+})
+
+// Not working
+app.view({ callback_id: 'view_1', type: 'view_closed' }, async ({ ack, body, view, client }) => {
+  // Acknowledge the view_closed request
+  await ack();
+  // react on close request
+  console.log("********", body)
+});
+
+// Not working
+app.view('view_1', async ({ ack, body, view, client, logger }) => {
+  // Acknowledge the view_submission request
+  await ack();
+  console.log("********")
+  const val = view['state']['values']['input_channel']['channel_name_input'];
+  console.log(val)
+}, async ({payload}) => {
+  console.log(payload)
 })
 
 app.command('/addrule', async ({ ack, body, client, logger }) => {
@@ -57,50 +76,48 @@ app.command('/addrule', async ({ ack, body, client, logger }) => {
         callback_id: 'view_1',
         title: {
           type: 'plain_text',
-          text: 'Modal title'
+          text: 'Rule Configuration'
         },
         blocks: [
           {
-            type: 'section',
-            text: {
-              type: 'mrkdwn',
-              text: 'Welcome to a modal with _blocks_'
+            type: 'input',
+            block_id: 'input_channel',
+            label: {
+              type: 'plain_text',
+              text: 'What channel do you want to echo to?'
             },
-            accessory: {
-              type: 'button',
-              text: {
-                type: 'plain_text',
-                text: 'Click me!'
-              },
-              action_id: 'button_abc'
+            element: {
+              type: 'plain_text_input',
+              action_id: 'channel_name_input',
+              multiline: false
             }
           },
           {
             type: 'input',
-            block_id: 'input_c',
+            block_id: 'input_keyword',
             label: {
               type: 'plain_text',
-              text: 'What are your hopes and dreams?'
+              text: 'What keyword should this rule listen for?'
             },
             element: {
               type: 'plain_text_input',
-              action_id: 'dreamy_input',
-              multiline: true
+              action_id: 'keyword_input',
+              multiline: false
             }
           }
         ],
+        // TODO: Add validation around input/block submission without input
         submit: {
           type: 'plain_text',
           text: 'Submit'
-        }
+        },
+        notify_on_close: true
       }
     });
-
-    logger.info("****", result);
+    logger.info(result);
   } catch (e) {
     logger.error(error);
   }
-  logger.info()
 
   // const textArr = command.text.split(" ")
   // const keyword = textArr[0]
