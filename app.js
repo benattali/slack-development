@@ -28,9 +28,9 @@ async function initializeRules() {
 }
 
 // example of creating a new route if we need to
-receiver.router.post('/create-rule', (req, res) => {
-  res.status(200).end()
-});
+// receiver.router.post('/create-rule', (req, res) => {
+//   res.status(200).end()
+// });
 
 app.command('/showrules', async ({ command, ack, say }) => {
   // Acknowledge command request
@@ -43,28 +43,11 @@ app.command('/showrules', async ({ command, ack, say }) => {
 
 })
 
-// Not working
-app.view({ callback_id: 'view_1', type: 'view_closed' }, async ({ ack, body, view, client }) => {
-  // Acknowledge the view_closed request
-  await ack();
-  // react on close request
-  console.log("********", body)
-});
-
-// Not working
-app.view('view_1', async ({ ack, body, view, client, logger }) => {
-  // Acknowledge the view_submission request
-  await ack();
-  console.log("********")
-  const val = view['state']['values']['input_channel']['channel_name_input'];
-  console.log(val)
-}, async ({payload}) => {
-  console.log(payload)
-})
-
-app.command('/addrule', async ({ ack, body, client, logger }) => {
+// check if we can pass 'command' to the view listener
+app.command('/addrule', async ({ ack, command, body, client, logger }) => {
   await ack()
 
+  console.log(command.channel_id);
   try {
     const result = await client.views.open({
       // Pass a valid trigger_id within 3 seconds of receiving it
@@ -114,7 +97,6 @@ app.command('/addrule', async ({ ack, body, client, logger }) => {
         notify_on_close: true
       }
     });
-    logger.info(result);
   } catch (e) {
     logger.error(error);
   }
@@ -123,6 +105,23 @@ app.command('/addrule', async ({ ack, body, client, logger }) => {
   // const keyword = textArr[0]
   // const channelToSend = textArr[1].match(/([A-Z])\w+/)[0]
   // const channelNameToSend = textArr[1].match(/(?!\|)([a-z])+/)[0]
+  // const rule = new Rule({
+  //   listeningChannelId: command.channel_id,
+  //   echoToChannelId: channelToSend,
+  //   keyword: keyword,
+  //   echoToChannelName: channelNameToSend,
+  // })
+  // await rule.save()
+  // setListener(app, rule)
+});
+
+app.view('view_1', async ({ ack, body, view, client, logger }) => {
+  // Acknowledge the view_submission request
+  await ack();
+  const channelNameToSend = view['state']['values']['input_channel']['channel_name_input'];
+  const keyword = view['state']['values']['input_keyword']['keyword_input'];
+  console.log("body", body)
+  console.log("client", client)
   // const rule = new Rule({
   //   listeningChannelId: command.channel_id,
   //   echoToChannelId: channelToSend,
